@@ -85,5 +85,5 @@ if st.button("Analyze my ingredients"):
 Incompatible_pairs = [({"Tomato","Potato"}, "Both share late blight disease and compete heavily for nightshade nutrients."),
                       ({"Onion", "Beans"}, "Onions release biochemicals that stunt N2 fixing bacteria in bean roots"),
                       ({"Tomato", "Cabbage"}, "Cabbage stunts tomato growth and competes for heavy Nitrogen"),
-                      ({"Maize", ''})]
-#test check gi1  k
+                      ({"Maize", "Tomato"}, "Competition for sunlight and growing space")]
+#test check
