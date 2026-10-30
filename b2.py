@@ -86,3 +86,4 @@ Incompatible_pairs = [({"Tomato","Potato"}, "Both share late blight disease and 
                       ({"Onion", "Beans"}, "Onions release biochemicals that stunt N2 fixing bacteria in bean roots"),
                       ({"Tomato", "Cabbage"}, "Cabbage stunts tomato growth and competes for heavy Nitrogen"),
                       ({"Maize", ''})]
+#test check gi1  k
