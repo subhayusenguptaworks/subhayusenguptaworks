@@ -1,4 +1,13 @@
+import os
 import streamlit as st
+from dotenv import load_dotenv
+from google import genai
+
+
+load_dotenv()
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+
 st.set_page_config(page_title="Ecoroot AI", layout="wide")
 
 st.title("Biofertilizer recommendations")
@@ -50,7 +59,7 @@ soil_status = st.selectbox("Do you have soil status?", ["Yes", "No"])
 if soil_status == "Yes":
     soil_pH = st.number_input("Soil pH", min_value=0.0, max_value=14.0, value=7.0, step=0.1)
 else:
-    soil_pH = None
+    soil_pH = 6.5
 
 #Recommended pH values for all crops listed
 pH_ranges = {"Cereals": [6.0,7.5],
@@ -76,13 +85,43 @@ if st.button("Analyze my ingredients"):
         low, high = pH_ranges[category]
         st.write("Soil pH:", soil_pH)
         if soil_pH < low:
-            st.warning(f"Soil pH  {soil_pH} is below pH range.")
+            st.warning(f"Soil pH {soil_pH} is below pH range.")
         elif soil_pH > high:
             st.warning(f"Soil pH {soil_pH} is above pH range.")
         else:
             st.success(f"Soil pH {soil_pH} is within pH range.")
-    st.warning("No fertilizer formula generated. "
-               "Next stage is checking crop compatibility, "
-               "material property and verified scientific evidence")
-    st.success("Input collected successfully. "
-               "Next task is to build the evidence-based recommendation engine")
+
+    # --- GEMINI API CALL REPLACEMENT ---
+    if not crop:
+        st.warning("Please select at least one target crop.")
+    elif not crop_2 and not available:
+        st.warning("Please select at least one waste ingredient or material.")
+    else:
+        with st.spinner("Generating evidence-based biofertilizer formulation..."):
+            all_scraps = crop_2 + available
+            if other_material:
+                all_scraps.append(other_material)
+
+            effective_ph = soil_pH if soil_pH is not None else 6.5
+
+            prompt = f"""
+            You are an expert organic agronomist.
+            Generate a safe, home biofertilizer recipe using the following details:
+            - Target Crop: {', '.join(crop)}
+            - Available Scrap Feedstock: {', '.join(all_scraps)}
+            - Soil pH: {effective_ph}
+
+            Output strictly in this 3-step format:
+            1. Clean: Washing, drying, or sorting guidelines to prevent mold and pests.
+            2. Prepare: Method (steeping, aerobic fermentation, drying/grinding) and timeline.
+            3. Feed: Volumetric dosage per pot, water dilution ratio (enforce standard 1:10 dilution buffer), and frequency.
+            """
+
+            response = client.models.generate_content(
+                model="gemini-3.5-flash",
+                contents=prompt
+            )
+
+            st.markdown("---")
+            st.markdown("### Action Card: Clean $\\to$ Prepare $\\to$ Feed")
+            st.info(response.text)
